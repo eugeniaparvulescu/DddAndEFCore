@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,8 @@ namespace App
             {
                 Student student = context.Students.Find(1L);
             }
+
+            Console.ReadKey();
         }
 
         private static ILoggerFactory CreateLoggerFactory()
