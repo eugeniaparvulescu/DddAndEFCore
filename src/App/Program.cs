@@ -15,7 +15,7 @@ namespace App
 
             using (var context = new SchoolContext(connectionString, useConsoleLogger))
             {
-                Student student = context.Students.Include(x => x.FavoriteCourse).FirstOrDefault();
+                Student student = context.Students.FirstOrDefault();
             }
 
             Console.ReadKey();

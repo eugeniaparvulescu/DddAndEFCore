@@ -20,7 +20,8 @@ namespace App
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder
-                .UseSqlServer(_connectionString);
+                .UseSqlServer(_connectionString)
+                .UseLazyLoadingProxies();
 
             if (_useConsoleLogger)
             {
