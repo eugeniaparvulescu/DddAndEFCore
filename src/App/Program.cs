@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace App
@@ -13,7 +15,7 @@ namespace App
 
             using (var context = new SchoolContext(connectionString, useConsoleLogger))
             {
-                Student student = context.Students.Find(1L);
+                Student student = context.Students.Include(x => x.FavoriteCourse).FirstOrDefault();
             }
 
             Console.ReadKey();
