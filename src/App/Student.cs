@@ -2,9 +2,16 @@
 {
     public class Student
     {
-        public long Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public long FavoriteCourseId { get; set; }
+        public Student(string name, string email, long favoriteCourseId)
+        {
+            Name = name;
+            Email = email;
+            FavoriteCourseId = favoriteCourseId;
+        }
+
+        public long Id { get; private set; }
+        public string Name { get; private set; }
+        public string Email { get; private set; }
+        public long FavoriteCourseId { get; private set; }
     }
 }
