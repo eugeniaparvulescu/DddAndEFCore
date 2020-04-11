@@ -15,7 +15,11 @@ namespace App
 
             using (var context = new SchoolContext(connectionString, useConsoleLogger))
             {
-                Student student = context.Students.FirstOrDefault();
+                Student student = context.Students.Find(1l);
+                // always prefer Find instead or First / Single / FirstOrDefault because of the Identity map pattern
+                Student student2 = context.Students.Find(1l);
+
+                var hasEqualReference = ReferenceEquals(student, student2);
             }
 
             Console.ReadKey();
