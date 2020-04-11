@@ -1,15 +1,44 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace App
 {
     public sealed class SchoolContext : DbContext
     {
+        public SchoolContext(string connectionString, bool useConsoleLogger) : base()
+        {
+            _connectionString = connectionString;
+            _useConsoleLogger = useConsoleLogger;
+        }
+
         public DbSet<Student> Students { get; set; }
         public DbSet<Course> Courses { get; set; }
 
-        public SchoolContext(DbContextOptions<SchoolContext> options)
-            : base(options)
+        private readonly string _connectionString;
+        private readonly bool _useConsoleLogger;
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder
+                .UseSqlServer(_connectionString);
+
+            if (_useConsoleLogger)
+            {
+                optionsBuilder
+                    .UseLoggerFactory(CreateLoggerFactory())
+                    .EnableSensitiveDataLogging();
+            }
+        }
+
+        private static ILoggerFactory CreateLoggerFactory()
+        {
+            return LoggerFactory.Create(builder =>
+            {
+                builder
+                    .AddFilter((category, level) =>
+                        category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information)
+                    .AddConsole();
+            });
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

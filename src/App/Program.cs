@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace App
 {
@@ -10,16 +8,10 @@ namespace App
     {
         public static void Main()
         {
-            string connectionString = GetConnectionString();
-            ILoggerFactory loggerFactory = CreateLoggerFactory();
+            var connectionString = GetConnectionString();
+            bool useConsoleLogger = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
-            var optionsBuilder = new DbContextOptionsBuilder<SchoolContext>();
-            optionsBuilder
-                .UseSqlServer(connectionString)
-                .UseLoggerFactory(loggerFactory)
-                .EnableSensitiveDataLogging();
-
-            using (var context = new SchoolContext(optionsBuilder.Options))
+            using (var context = new SchoolContext(connectionString, useConsoleLogger))
             {
                 Student student = context.Students.Find(1L);
             }
@@ -27,16 +19,6 @@ namespace App
             Console.ReadKey();
         }
 
-        private static ILoggerFactory CreateLoggerFactory()
-        {
-            return LoggerFactory.Create(builder =>
-            {
-                builder
-                    .AddFilter((category, level) =>
-                        category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information)
-                    .AddConsole();
-            });
-        }
 
         private static string GetConnectionString()
         {
