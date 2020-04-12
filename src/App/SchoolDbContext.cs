@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace App
 {
-    public sealed class SchoolContext : DbContext
+    public sealed class SchoolDbContext : DbContext
     {
-        public SchoolContext(string connectionString, bool useConsoleLogger) : base()
+        public SchoolDbContext(string connectionString, bool useConsoleLogger) : base()
         {
             _connectionString = connectionString;
             _useConsoleLogger = useConsoleLogger;
@@ -31,17 +31,6 @@ namespace App
             }
         }
 
-        private static ILoggerFactory CreateLoggerFactory()
-        {
-            return LoggerFactory.Create(builder =>
-            {
-                builder
-                    .AddFilter((category, level) =>
-                        category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information)
-                    .AddConsole();
-            });
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Student>(x =>
@@ -51,12 +40,36 @@ namespace App
                 x.Property(p => p.Email);
                 x.Property(p => p.Name);
                 x.HasOne(p => p.FavoriteCourse).WithMany();
+                x.HasMany(p => p.Enrollments).WithOne(p => p.Student)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
             });
+
             modelBuilder.Entity<Course>(x =>
             {
                 x.ToTable("Course").HasKey(k => k.Id);
                 x.Property(p => p.Id).HasColumnName("CourseID");
                 x.Property(p => p.Name);
+            });
+
+            modelBuilder.Entity<Enrollment>(x =>
+            {
+                x.ToTable("Enrollment").HasKey(k => k.Id);
+                x.Property(p => p.Id).HasColumnName("EnrollmentID");
+                x.HasOne(p => p.Student).WithMany(p => p.Enrollments);
+                x.HasOne(p => p.Course).WithMany();
+                x.Property(p => p.Grade);
+            });
+        }
+
+        private static ILoggerFactory CreateLoggerFactory()
+        {
+            return LoggerFactory.Create(builder =>
+            {
+                builder
+                    .AddFilter((category, level) =>
+                        category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information)
+                    .AddConsole();
             });
         }
     }

@@ -1,30 +1,33 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using App.Controllers;
 using Microsoft.Extensions.Configuration;
 
 namespace App
 {
     public class Program
     {
+        private static bool _useConsoleLogger;
+
         public static void Main()
         {
-            var connectionString = GetConnectionString();
-            bool useConsoleLogger = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
-
-            using (var context = new SchoolContext(connectionString, useConsoleLogger))
-            {
-                Student student = context.Students.Find(1l);
-                // always prefer Find instead or First / Single / FirstOrDefault because of the Identity map pattern
-                Student student2 = context.Students.Find(1l);
-
-                var hasEqualReference = ReferenceEquals(student, student2);
-            }
+            var disenrollResult = Execute(x => x.DisenrollStudent(1L, 2L));
+            var enrollResult = Execute(x => x.EnrollStudent(1L, 2L, Grade.A));
+            var result1 = Execute(x => x.CheckStudentFavoriteCourse(1L, 1L));
+            var result2 = Execute(x => x.CheckStudentFavoriteCourse(1L, 2L));
 
             Console.ReadKey();
         }
 
+        public static string Execute(Func<StudentsController, string> func)
+        {
+            var connectionString = GetConnectionString();
+            using (var context = new SchoolDbContext(connectionString, _useConsoleLogger))
+            {
+                var controller = new StudentsController(context, new StudentRepository(context));
+                return func(controller);
+            }
+        }
 
         private static string GetConnectionString()
         {
