@@ -23,5 +23,10 @@
 
             return student;
         }
+
+        public void Save(Student student)
+        {
+            _dbContext.Attach(student);
+        }
     }
 }

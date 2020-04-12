@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 
 namespace App
@@ -49,7 +50,8 @@ namespace App
             {
                 x.ToTable("Course").HasKey(k => k.Id);
                 x.Property(p => p.Id).HasColumnName("CourseID");
-                x.Property(p => p.Name);
+                x.Property(p => p.Name)
+                    .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
             });
 
             modelBuilder.Entity<Enrollment>(x =>

@@ -16,6 +16,9 @@ namespace App
             var result1 = Execute(x => x.CheckStudentFavoriteCourse(1L, 1L));
             var result2 = Execute(x => x.CheckStudentFavoriteCourse(1L, 2L));
 
+            var registerResult = Execute(x => x.RegisterStudent("Geni", "email", 1, Grade.A));
+            var editResult = Execute(x => x.EditPeronalInformation(3, "Geni boss", "email@gmail.com", 2));
+
             Console.ReadKey();
         }
 
