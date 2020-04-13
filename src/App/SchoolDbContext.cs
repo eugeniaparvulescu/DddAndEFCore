@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
 
 namespace App
 {
@@ -17,7 +18,7 @@ namespace App
 
         private readonly string _connectionString;
         private readonly bool _useConsoleLogger;
-
+        private readonly Type[] EnumerationTypes = new[] { typeof(Course), typeof(Suffix) };
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder
@@ -38,8 +39,15 @@ namespace App
             {
                 x.ToTable("Student").HasKey(k => k.Id);
                 x.Property(p => p.Id).HasColumnName("StudentID");
-                x.Property(p => p.Email);
-                x.Property(p => p.Name);
+                x.Property(p => p.Email)
+                    .HasConversion(p => p.Value, p => Email.Create(p).Value);
+                x.OwnsOne(p => p.Name, p =>
+                    {
+                        p.Property<long?>("NameSuffixId").HasColumnName("NameSuffixId");
+                        p.Property(pp => pp.First).HasColumnName("FirstName");
+                        p.Property(pp => pp.Last).HasColumnName("LastName");
+                        p.HasOne(pp => pp.Suffix).WithMany().HasForeignKey("NameSuffixId").IsRequired(false);
+                    });
                 x.HasOne(p => p.FavoriteCourse).WithMany();
                 x.HasMany(p => p.Enrollments).WithOne(p => p.Student)
                     .OnDelete(DeleteBehavior.Cascade)
@@ -50,8 +58,8 @@ namespace App
             {
                 x.ToTable("Course").HasKey(k => k.Id);
                 x.Property(p => p.Id).HasColumnName("CourseID");
-                x.Property(p => p.Name)
-                    .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
+                x.Property(p => p.Name);
+                    //.Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
             });
 
             modelBuilder.Entity<Enrollment>(x =>
@@ -61,6 +69,14 @@ namespace App
                 x.HasOne(p => p.Student).WithMany(p => p.Enrollments);
                 x.HasOne(p => p.Course).WithMany();
                 x.Property(p => p.Grade);
+            });
+
+            modelBuilder.Entity<Suffix>(x =>
+            {
+                x.ToTable("Suffix").HasKey(k => k.Id);
+                x.Property(p => p.Id).HasColumnName("SuffixId");
+                x.Property(p => p.Name);
+                    //.Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
             });
         }
 
@@ -73,6 +89,19 @@ namespace App
                         category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information)
                     .AddConsole();
             });
+        }
+
+        public override int SaveChanges()
+        {
+            var enumerationEntries = ChangeTracker.Entries()
+                .Where(x => EnumerationTypes.Contains(x.Entity.GetType()));
+
+            foreach(var entry in enumerationEntries)
+            {
+                entry.State = EntityState.Unchanged;
+            }
+
+            return base.SaveChanges();
         }
     }
 }

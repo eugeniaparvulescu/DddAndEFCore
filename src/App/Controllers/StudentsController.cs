@@ -70,7 +70,7 @@
             return "Ok";
         }
 
-        public string RegisterStudent(string name, string email, long favoriteCourseId, Grade favoriteCourseGrade)
+        public string RegisterStudent(string firstName, string lastName, long nameSuffixId, string email, long favoriteCourseId, Grade favoriteCourseGrade)
         {
             var course = Course.Find(favoriteCourseId);
             //var course = _dbContext.Courses.Find(favoriteCourseId);
@@ -79,7 +79,21 @@
                 return "Course not found";
             }
 
-            var student = new Student(name, email, course, favoriteCourseGrade);
+            var emailResult = Email.Create(email);
+            if (emailResult.IsFailure)
+            {
+                return emailResult.Error;
+            }
+
+            var suffix = Suffix.FromId(nameSuffixId);
+
+            var nameResult = Name.Create(firstName, lastName, suffix);
+            if (nameResult.IsFailure)
+            {
+                return nameResult.Error;
+            }
+
+            var student = new Student(nameResult.Value, emailResult.Value, course, favoriteCourseGrade);
             _repository.Save(student);
             
             var studentEntityState = _dbContext.Entry(student).State;
@@ -92,7 +106,7 @@
             return "Ok";
         }
 
-        public string EditPeronalInformation(long studentId, string name, string email, long favoriteCourseId)
+        public string EditPeronalInformation(long studentId, string firstName, string lastName, long nameSuffixId, string email, long favoriteCourseId)
         {
             var student = _repository.GetById(studentId);
             if (student == null)
@@ -106,9 +120,20 @@
                 return "Course not found";
             }
 
-            student.Name = name;
-            student.Email = email;
-            student.FavoriteCourse = course;
+            var emailResult = Email.Create(email);
+            if (emailResult.IsFailure)
+            {
+                return emailResult.Error;
+            }
+            var suffix = Suffix.FromId(nameSuffixId);
+
+            var nameResult = Name.Create(firstName, lastName, suffix);
+            if (nameResult.IsFailure)
+            {
+                return nameResult.Error;
+            }
+
+            student.EditPersonalInfo(nameResult.Value, emailResult.Value, course);
 
             var studentEntityState = _dbContext.Entry(student).State;
             var courseEntitytate = _dbContext.Entry(student.FavoriteCourse).State;

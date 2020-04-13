@@ -11,13 +11,13 @@ namespace App
 
         public static void Main()
         {
-            var disenrollResult = Execute(x => x.DisenrollStudent(1L, 2L));
-            var enrollResult = Execute(x => x.EnrollStudent(1L, 2L, Grade.A));
+            //var disenrollResult = Execute(x => x.DisenrollStudent(1L, 2L));
+            //var enrollResult = Execute(x => x.EnrollStudent(1L, 2L, Grade.A));
             var result1 = Execute(x => x.CheckStudentFavoriteCourse(1L, 1L));
-            var result2 = Execute(x => x.CheckStudentFavoriteCourse(1L, 2L));
+            //var result2 = Execute(x => x.CheckStudentFavoriteCourse(1L, 2L));
 
-            var registerResult = Execute(x => x.RegisterStudent("Geni", "email", 1, Grade.A));
-            var editResult = Execute(x => x.EditPeronalInformation(3, "Geni boss", "email@gmail.com", 2));
+            //var registerResult = Execute(x => x.RegisterStudent("Geni", "email", 1, Grade.A));
+            var editResult = Execute(x => x.EditPeronalInformation(3, "Geni", "boss", 2L, "email.3@gmail.com", 2));
 
             Console.ReadKey();
         }

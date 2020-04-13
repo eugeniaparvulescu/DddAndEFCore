@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace App
@@ -7,7 +8,7 @@ namespace App
     {
         protected Student() { }
 
-        public Student(string name, string email, Course favoriteCourse, Grade favoriteCourseGrade)
+        public Student(Name name, Email email, Course favoriteCourse, Grade favoriteCourseGrade)
         {
             Name = name;
             Email = email;
@@ -16,9 +17,9 @@ namespace App
             EnrollIn(favoriteCourse, favoriteCourseGrade);
         }
 
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public virtual Course FavoriteCourse { get; set; }
+        public virtual Name Name { get; private set; }
+        public Email Email { get; private set; }
+        public virtual Course FavoriteCourse { get; private set; }
 
         private readonly List<Enrollment> _enrollments = new List<Enrollment>();
         public virtual IReadOnlyList<Enrollment> Enrollments => _enrollments.ToList();
@@ -45,6 +46,26 @@ namespace App
             }
 
             _enrollments.Remove(enrollment);
+        }
+
+        public void EditPersonalInfo(Name name, Email email, Course favoriteCourse)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(favoriteCourse));
+            }
+
+            Name = name;
+            Email = email;
+            FavoriteCourse = favoriteCourse;
         }
     }
 }
