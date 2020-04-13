@@ -7,10 +7,11 @@ namespace App
 {
     public sealed class SchoolDbContext : DbContext
     {
-        public SchoolDbContext(string connectionString, bool useConsoleLogger) : base()
+        public SchoolDbContext(string connectionString, bool useConsoleLogger, EventDispatcher eventDispatcher) : base()
         {
             _connectionString = connectionString;
             _useConsoleLogger = useConsoleLogger;
+            _eventDispatcher = eventDispatcher;
         }
 
         public DbSet<Student> Students { get; set; }
@@ -18,7 +19,10 @@ namespace App
 
         private readonly string _connectionString;
         private readonly bool _useConsoleLogger;
+        private readonly EventDispatcher _eventDispatcher;
+
         private readonly Type[] EnumerationTypes = new[] { typeof(Course), typeof(Suffix) };
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder
@@ -101,7 +105,23 @@ namespace App
                 entry.State = EntityState.Unchanged;
             }
 
-            return base.SaveChanges();
+            var entities = ChangeTracker.Entries()
+                .Where(x => x.Entity is AggregateRoot)
+                .Select(x => (AggregateRoot)x.Entity)
+                .ToList();
+
+            var result = base.SaveChanges();
+
+            foreach(var entity in entities)
+            {
+                // dispatch events
+                _eventDispatcher.Dispatch(entity.DomainEvents);
+
+                // clear events
+                entity.ClearDomainEvents();
+            }
+
+            return result;
         }
     }
 }

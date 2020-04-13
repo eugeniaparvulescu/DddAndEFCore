@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace App
 {
-    public class Student : Entity
+    public class Student : AggregateRoot
     {
         protected Student() { }
 
@@ -61,6 +61,11 @@ namespace App
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(favoriteCourse));
+            }
+
+            if (email != Email)
+            {
+                RaiseEvent(new EmailChangedEvent(Id, email));
             }
 
             Name = name;

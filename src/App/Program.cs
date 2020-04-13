@@ -17,7 +17,7 @@ namespace App
             //var result2 = Execute(x => x.CheckStudentFavoriteCourse(1L, 2L));
 
             //var registerResult = Execute(x => x.RegisterStudent("Geni", "email", 1, Grade.A));
-            var editResult = Execute(x => x.EditPeronalInformation(3, "Geni", "boss", 2L, "email.3@gmail.com", 2));
+            var editResult = Execute(x => x.EditPeronalInformation(3, "Geni", "boss", 2L, "emailNou@gmail.com", 2));
 
             Console.ReadKey();
         }
@@ -25,7 +25,9 @@ namespace App
         public static string Execute(Func<StudentsController, string> func)
         {
             var connectionString = GetConnectionString();
-            using (var context = new SchoolDbContext(connectionString, _useConsoleLogger))
+
+            var eventDispatcher = new EventDispatcher(new MessageBus(new Bus()));
+            using (var context = new SchoolDbContext(connectionString, _useConsoleLogger, eventDispatcher))
             {
                 var controller = new StudentsController(context, new StudentRepository(context));
                 return func(controller);
